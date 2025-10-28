@@ -11,14 +11,12 @@ import android.view.View
 import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.isGone
 import androidx.lifecycle.lifecycleScope
 import com.google.android.filament.Engine
 import com.google.android.filament.Texture
-
 import com.google.android.filament.TextureSampler
+import com.amazon.example3dscene.customview.UvPaintMaskView
 import io.github.sceneview.SceneView
 import io.github.sceneview.collision.Vector3
 import io.github.sceneview.material.setTexture
@@ -31,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var loadingView: View
     var prevDistanceX: Float = 0.0F
     var prevDistanceY: Float = 0.0F
+    lateinit var texture: Texture
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -84,35 +83,43 @@ class MainActivity : AppCompatActivity() {
             }
 
 // Lấy chiều rộng & chiều cao của ảnh
-            val centerY = mutableBitmap.height / 2f
+            val centerY = mutableBitmap.height / 2f +100
 
 // Vẽ đường ngang qua giữa ảnh (từ trái sang phải)
             canvas.drawLine(0f, centerY, mutableBitmap.width.toFloat(), centerY, paint)
             findViewById<ImageView>(R.id.imgBitmap).setImageBitmap(mutableBitmap)
 
             val engine = sceneView.engine
-            val texture = createTextureFromBitmap(engine, mutableBitmap)
+            val uv = BitmapFactory.decodeResource(resources, R.drawable.a)
+            findViewById<UvPaintMaskView >(R.id.customPaintView).setUvBitmap(uv)
+            findViewById<UvPaintMaskView >(R.id.customPaintView).onBitmapUpdated = {
+                Log.d("112233","ABCDED")
+                val drawMutableMap = findViewById<UvPaintMaskView >(R.id.customPaintView).getResultBitmap()
+                drawMutableMap?.let {
+                    texture = createTextureFromBitmap(engine,it)
 
-            modelInstance2.materialInstances.forEach { mat ->
-                val sampler = TextureSampler(
-                    TextureSampler.MinFilter.LINEAR,
-                    TextureSampler.MagFilter.LINEAR,
-                    TextureSampler.WrapMode.REPEAT
-                )
-                val parameters = mat.material.getParameters()
-                parameters.forEach { param ->
-                    Log.d(
-                        "SceneView",
-                        "🧩 Param: ${param.name}, type: ${param.type}"
-                    )
-                }
-                try {
-                    mat.setParameter("baseColorIndex", 0)
-                    mat.setTexture("baseColorMap",texture,sampler)
-                    sceneView.invalidate()
-                    Log.d("SceneView", "✅ Gán texture thành công cho ${mat.name}")
-                } catch (e: Exception) {
-                    Log.e("SceneView", "❌ Không gán được texture: ${e.message}")
+                    modelInstance2.materialInstances.forEach { mat ->
+                        val sampler = TextureSampler(
+                            TextureSampler.MinFilter.LINEAR,
+                            TextureSampler.MagFilter.LINEAR,
+                            TextureSampler.WrapMode.REPEAT
+                        )
+                        val parameters = mat.material.getParameters()
+                        parameters.forEach { param ->
+                            Log.d(
+                                "SceneView",
+                                "🧩 Param: ${param.name}, type: ${param.type}"
+                            )
+                        }
+                        try {
+                            mat.setParameter("baseColorIndex", 0)
+                            mat.setTexture("baseColorMap",texture,sampler)
+                            sceneView.invalidate()
+                            Log.d("SceneView", "✅ Gán texture thành công cho ${mat.name}")
+                        } catch (e: Exception) {
+                            Log.e("SceneView", "❌ Không gán được texture: ${e.message}")
+                        }
+                    }
                 }
             }
 
@@ -131,7 +138,6 @@ class MainActivity : AppCompatActivity() {
 //                materialInstance.setParameter("baseColorFactor", Colors.RgbType.LINEAR,
 //                    0f, 1f, 0f)
 //            }
-
             loadingView.isGone = true
         }
     }

@@ -3,21 +3,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:clipToPadding="false">
     <ImageView
         android:id="@+id/imgBitmap"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        app:layout_constraintTop_toTopOf="parent"/>
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
     <io.github.sceneview.SceneView
         android:id="@+id/sceneView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/customPaintView"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imgBitmap" />
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/loadingView"
@@ -26,9 +28,14 @@
         android:layout_gravity="center"
         android:indeterminate="true"
         app:indicatorSize="64dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/customPaintView"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imgBitmap"
         app:trackColor="#3FFFFFFF" />
+    <com.amazon.example3dscene.customview.UvPaintMaskView
+        android:id="@+id/customPaintView"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
