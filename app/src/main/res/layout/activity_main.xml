@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:clipToPadding="false">
+
     <ImageView
         android:id="@+id/imgBitmap"
         android:layout_width="match_parent"
@@ -33,7 +34,7 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imgBitmap"
         app:trackColor="#3FFFFFFF" />
-    <com.amazon.example3dscene.customview.UvPaintMaskView
+    <com.amazon.examplethreescene.customview.UvPaintMaskView
         android:id="@+id/customPaintView"
         android:layout_width="match_parent"
         android:layout_height="200dp"

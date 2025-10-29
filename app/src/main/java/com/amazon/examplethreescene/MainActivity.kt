@@ -1,4 +1,4 @@
-package com.amazon.example3dscene
+package com.amazon.examplethreescene
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
@@ -13,15 +14,19 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
 import androidx.lifecycle.lifecycleScope
+import com.amazon.examplethreescene.R
 import com.google.android.filament.Engine
 import com.google.android.filament.Texture
 import com.google.android.filament.TextureSampler
-import com.amazon.example3dscene.customview.UvPaintMaskView
+import com.amazon.examplethreescene.customview.UvPaintMaskView
+import com.amazon.examplethreescene.utils.AssimpHelper
+import com.amazon.examplethreescene.utils.FileUtils
 import io.github.sceneview.SceneView
 import io.github.sceneview.collision.Vector3
 import io.github.sceneview.material.setTexture
 import io.github.sceneview.node.ModelNode
 import kotlinx.coroutines.launch
+import java.io.File
 import java.nio.ByteBuffer
 
 class MainActivity : AppCompatActivity() {
@@ -49,30 +54,10 @@ class MainActivity : AppCompatActivity() {
                 position = _root_ide_package_.io.github.sceneview.math.Position(z = 4.0f)
             }
 
-//            val modelFile = "models/grogu.glb"
-//            val modelInstance = sceneView.modelLoader.createModelInstance(modelFile)
-//
-//            val modelNode = ModelNode(
-//                modelInstance = modelInstance,
-//                scaleToUnits = 2.0f,
-//            )
-//
-//            modelNode.scale = _root_ide_package_.io.github.sceneview.math.Scale(1f)
-//
-//            val modelFile1 = "models/azaz.glb"
-//            val modelInstance1 = sceneView.modelLoader.createModelInstance(modelFile1)
-//
-//            val modelNode1 = ModelNode(
-//                modelInstance = modelInstance1,
-//                scaleToUnits = 2.0f,
-//            )
-//
-//            modelNode1.scale = _root_ide_package_.io.github.sceneview.math.Scale(0.05f)
-
-            val modelFile2 = "models/qaz.glb"
+            val modelFile2 = "models/ooo.glb"
             val modelInstance2 = sceneView.modelLoader.createModelInstance(modelFile2)
 
-            var uvBitmap = BitmapFactory.decodeResource(resources, R.drawable.a)
+            var uvBitmap = BitmapFactory.decodeResource(resources, R.drawable.ooo)
             val mutableBitmap = uvBitmap.copy(Bitmap.Config.ARGB_8888, true)
             val canvas = Canvas(mutableBitmap)
             val paint = Paint().apply {
@@ -90,7 +75,7 @@ class MainActivity : AppCompatActivity() {
             findViewById<ImageView>(R.id.imgBitmap).setImageBitmap(mutableBitmap)
 
             val engine = sceneView.engine
-            val uv = BitmapFactory.decodeResource(resources, R.drawable.a)
+            val uv = BitmapFactory.decodeResource(resources, R.drawable.jjj)
             findViewById<UvPaintMaskView >(R.id.customPaintView).setUvBitmap(uv)
             findViewById<UvPaintMaskView >(R.id.customPaintView).onBitmapUpdated = {
                 Log.d("112233","ABCDED")
@@ -123,6 +108,16 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
+            modelInstance2.materialInstances.forEach { mat ->
+                val parameters = mat.material.getParameters()
+                parameters.forEach { param ->
+                    Log.d(
+                        "ccc",
+                        "🧩 Param: ${param.name}, type: ${param.type}"
+                    )
+                }
+            }
+
             val modelNode2 = ModelNode(
                 modelInstance = modelInstance2,
                 scaleToUnits = 2.0f,
@@ -139,6 +134,22 @@ class MainActivity : AppCompatActivity() {
 //                    0f, 1f, 0f)
 //            }
             loadingView.isGone = true
+        }
+        val inputPath = FileUtils.copyAssetToAppStorage(this, "models/a.glb", "a.glb")
+        val outputPath = File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+            "model.fbx"
+        ).absolutePath
+
+        if (inputPath != null) {
+            val success = AssimpHelper.convertGlbToFbx(inputPath, outputPath)
+            if (success) {
+                Log.d("Assimp", "Convert GLB -> FBX thành công: $outputPath")
+            } else {
+                Log.e("Assimp", "Convert thất bại!")
+            }
+        } else {
+            Log.e("Assimp", "Không copy file từ assets được")
         }
     }
     fun createTextureFromBitmap(engine: Engine, bitmap: Bitmap): Texture {

@@ -1,4 +1,4 @@
-package com.amazon.example3dscene.customview
+package com.amazon.examplethreescene.customview
 
 import android.content.Context
 import android.graphics.Bitmap

@@ -1,4 +1,4 @@
-package com.amazon.example3dscene
+package com.amazon.examplethreescene
 
 import org.junit.Test
 
