@@ -9,4 +9,24 @@ class AssimpHelper {
     }
 
     external fun convertGlbToFbx(inputPath: String, cacheDir: String): Boolean
+
+    external fun convertGlbAndTextureToFbx(
+        glbPath: String,
+        texturePath: String,
+        outputFbxPath: String
+    ): Boolean
+
+    external fun exportGlbWithBitmapTextureToFbx(
+        glbPath: String,
+        texturePngPath: String,
+        outputFbxPath: String
+    ): Boolean
+
+    external fun bakeBitmapToFbx(
+        glbPath: String,
+        bitmapPixels: IntArray,
+        width: Int,
+        height: Int,
+        outputFbxPath: String
+    ): Boolean
 }

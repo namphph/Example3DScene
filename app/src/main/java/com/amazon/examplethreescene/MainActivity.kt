@@ -12,6 +12,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -41,6 +42,7 @@ class MainActivity : AppCompatActivity() {
     var prevDistanceX: Float = 0.0F
     var prevDistanceY: Float = 0.0F
     lateinit var texture: Texture
+    private var drawableBitmap: Bitmap?=null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -86,6 +88,8 @@ class MainActivity : AppCompatActivity() {
             findViewById<UvPaintMaskView >(R.id.customPaintView).onBitmapUpdated = {
                 Log.d("112233","ABCDED")
                 val drawMutableMap = findViewById<UvPaintMaskView >(R.id.customPaintView).getResultBitmap()
+                drawableBitmap = drawMutableMap
+                findViewById<ImageView>(R.id.imgBitmap1).setImageBitmap(drawMutableMap)
                 drawMutableMap?.let {
                     texture = createTextureFromBitmap(engine,it)
 
@@ -141,6 +145,41 @@ class MainActivity : AppCompatActivity() {
 //            }
             loadingView.isGone = true
         }
+        findViewById<Button>(R.id.btnExport).setOnClickListener {
+            convertGlbToFbxWithUVMap()
+        }
+//        convertGlbToFbx()
+    }
+
+    private fun convertGlbToFbxWithUVMap() {
+        val inputPath = FileUtils.copyAssetToAppStorage(this, "models/ooo.glb", "ooo.glb")
+        drawableBitmap?.let {
+            val texturePath = FileUtils.saveBitmapToAppFiles(this,it,"imageone")
+            val cacheDir = cacheDir.absolutePath + "/converted_model.fbx"
+            inputPath?.let { inputPath ->
+                texturePath?.let { texturePath ->
+                    val success = exportFbxWithBitmap(this,inputPath, it,cacheDir)
+                    if(success) {
+                        Log.d("112233","Thanh cong")
+                        saveToDownload(this@MainActivity,cacheDir,"pppp")
+                    }else{
+                        Log.d("112233", "That bai")
+                    }
+                }
+            }
+        }
+    }
+
+    fun exportFbxWithBitmap(context: Context, glbPath: String, bitmap: Bitmap, outputFbxPath: String): Boolean {
+        val width = bitmap.width
+        val height = bitmap.height
+        val pixels = IntArray(width * height)
+        bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+
+        return AssimpHelper().bakeBitmapToFbx(glbPath, pixels, width, height, outputFbxPath)
+    }
+
+    private fun convertGlbToFbx() {
         val inputPath = FileUtils.copyAssetToAppStorage(this, "models/a.glb", "a.glb")
         val cacheDir = cacheDir.absolutePath
         inputPath?.let { ipath ->
