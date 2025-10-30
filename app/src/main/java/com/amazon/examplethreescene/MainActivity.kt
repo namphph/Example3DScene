@@ -1,5 +1,7 @@
 package com.amazon.examplethreescene
 
+import android.content.ContentValues
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -7,9 +9,11 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.os.Bundle
 import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
@@ -27,6 +31,8 @@ import io.github.sceneview.material.setTexture
 import io.github.sceneview.node.ModelNode
 import kotlinx.coroutines.launch
 import java.io.File
+import java.io.FileInputStream
+import java.io.IOException
 import java.nio.ByteBuffer
 
 class MainActivity : AppCompatActivity() {
@@ -136,22 +142,75 @@ class MainActivity : AppCompatActivity() {
             loadingView.isGone = true
         }
         val inputPath = FileUtils.copyAssetToAppStorage(this, "models/a.glb", "a.glb")
-        val outputPath = File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-            "model.fbx"
-        ).absolutePath
+        val cacheDir = cacheDir.absolutePath
+        inputPath?.let { ipath ->
+            Log.d("112233", ipath);
+            Log.d("112233", cacheDir);
+            val success = AssimpHelper().convertGlbToFbx(inputPath, cacheDir)
+            val file = File("${cacheDir}")
 
-        if (inputPath != null) {
-            val success = AssimpHelper.convertGlbToFbx(inputPath, outputPath)
-            if (success) {
-                Log.d("Assimp", "Convert GLB -> FBX thành công: $outputPath")
+            if (file.exists()) {
+                val sizeInBytes = file.length()
+                val sizeInKb = sizeInBytes / 1024.0
+                val sizeInMb = sizeInKb / 1024.0
+
+                Log.d("Assimp", "✅ FBX file size: $sizeInBytes bytes (${String.format("%.2f", sizeInMb)} MB)")
             } else {
-                Log.e("Assimp", "Convert thất bại!")
+                Log.e("Assimp", "❌ File not found")
             }
-        } else {
-            Log.e("Assimp", "Không copy file từ assets được")
+            if (success) {
+                Log.d("Assimp", "✅ Convert thành công")
+                Log.d("Assimp", cacheDir)
+//                saveToDownload(this@MainActivity,cacheDir+"/converted_model.fbx","bb")
+            } else {
+                Log.e("Assimp", "❌ Convert thất bại")
+            }
         }
     }
+
+    fun saveToDownload(context: Context, cacheFilePath: String, outputFileName: String): Boolean {
+        val cacheFile = File(cacheFilePath)
+        if (!cacheFile.exists()) {
+            Log.e("Assimp", "❌ Cache file not found: $cacheFilePath")
+            return false
+        }
+
+        // Đợi file ghi xong (nếu export vừa hoàn tất)
+        var waitCount = 0
+        while (cacheFile.length() == 0L && waitCount < 10) {
+            Thread.sleep(200)
+            waitCount++
+        }
+
+        val values = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, outputFileName)
+            put(MediaStore.MediaColumns.MIME_TYPE, "model/fbx") // hoặc "application/octet-stream"
+            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+        }
+
+        val resolver = context.contentResolver
+        val uri = resolver.insert(MediaStore.Files.getContentUri("external"), values)
+            ?: return false.also { Log.e("Assimp", "❌ Failed to create file in Downloads") }
+
+        return try {
+            resolver.openOutputStream(uri, "w")?.use { output ->
+                FileInputStream(cacheFile).use { input ->
+                    input.copyTo(output)
+                    output.flush()
+                }
+            } ?: return false
+
+            Log.d("Assimp", "✅ Copied to Downloads as $outputFileName (${cacheFile.length()} bytes)")
+            true
+        } catch (e: Exception) {
+            Log.d("Assimp",e.toString())
+            e.printStackTrace()
+            false
+        } finally {
+            cacheFile.delete() // Xóa file cache nếu muốn
+        }
+    }
+
     fun createTextureFromBitmap(engine: Engine, bitmap: Bitmap): Texture {
         val texture = Texture.Builder()
             .width(bitmap.width)

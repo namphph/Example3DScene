@@ -18,8 +18,8 @@ android {
         // Thêm flags cho C++ và ABI filters
         externalNativeBuild {
             cmake {
-                cppFlags += "-std=c++17"
-                abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+//                cppFlags += "-std=c++17"
+//                abiFilters += listOf("arm64-v8a", "armeabi-v7a")
             }
         }
         ndkVersion = "29.0.14206865"
@@ -28,8 +28,14 @@ android {
     // Cấu hình CMake chung cho toàn project
     externalNativeBuild {
         cmake {
-            path = file("src/main/cpp/CMakeLists.txt")
-            version = "3.22.1"
+//            path = file("src/main/cpp/CMakeLists.txt")
+//            version = "3.22.1"
+        }
+    }
+
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
         }
     }
 
