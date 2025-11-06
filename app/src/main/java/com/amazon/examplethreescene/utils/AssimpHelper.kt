@@ -5,6 +5,7 @@ class AssimpHelper {
     companion object {
         init {
             System.loadLibrary("assimp")
+            System.loadLibrary("glbtex")
         }
     }
 
@@ -28,5 +29,11 @@ class AssimpHelper {
         width: Int,
         height: Int,
         outputFbxPath: String
+    ): Boolean
+
+    external fun convertWebpTexturesInGlb(
+        inputGlb: String,
+        outputGlb: String,
+        outputTextureDir: String
     ): Boolean
 }
