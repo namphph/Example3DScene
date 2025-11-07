@@ -7,9 +7,11 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Base64
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -31,10 +33,14 @@ import io.github.sceneview.collision.Vector3
 import io.github.sceneview.material.setTexture
 import io.github.sceneview.node.ModelNode
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 class MainActivity : AppCompatActivity() {
     private lateinit var sceneView: SceneView
@@ -43,6 +49,7 @@ class MainActivity : AppCompatActivity() {
     var prevDistanceY: Float = 0.0F
     lateinit var texture: Texture
     private var drawableBitmap: Bitmap?=null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -61,8 +68,9 @@ class MainActivity : AppCompatActivity() {
             sceneView.cameraNode.apply {
                 position = _root_ide_package_.io.github.sceneview.math.Position(z = 4.0f)
             }
+            val outFile = File(filesDir, "converted.glb")
 
-            val modelFile2 = "models/ooo.glb"
+            val modelFile2 = "models/roblox_phat.glb"
             val modelInstance2 = sceneView.modelLoader.createModelInstance(modelFile2)
 
             var uvBitmap = BitmapFactory.decodeResource(resources, R.drawable.ooo)
@@ -89,7 +97,7 @@ class MainActivity : AppCompatActivity() {
                 Log.d("112233","ABCDED")
                 val drawMutableMap = findViewById<UvPaintMaskView >(R.id.customPaintView).getResultBitmap()
                 drawableBitmap = drawMutableMap
-                findViewById<ImageView>(R.id.imgBitmap1).setImageBitmap(drawMutableMap)
+//                findViewById<ImageView>(R.id.imgBitmap1).setImageBitmap(drawMutableMap)
                 drawMutableMap?.let {
                     texture = createTextureFromBitmap(engine,it)
 
@@ -146,7 +154,8 @@ class MainActivity : AppCompatActivity() {
             loadingView.isGone = true
         }
         findViewById<Button>(R.id.btnExport).setOnClickListener {
-            convertGlbToFbxWithUVMap()
+//            convertGlbToFbxWithUVMap()
+            convertGlbToUVMap()
         }
 //        convertGlbToFbx()
     }
@@ -165,6 +174,21 @@ class MainActivity : AppCompatActivity() {
                     }else{
                         Log.d("112233", "That bai")
                     }
+                }
+            }
+        }
+    }
+
+    private fun convertGlbToUVMap() {
+        val inputPath = FileUtils.copyAssetToAppStorage(this, "models/a.glb", "a.glb")
+        val width = 1024
+        val height = 1024
+        inputPath?.let {
+            val uvPath = AssimpHelper().generateUVMap(inputPath,width,height)
+            if (uvPath != null) {
+                Log.d("AssimpJNI", "✅ UV map saved at $uvPath")
+                uvPath?.let { image ->
+                    findViewById<ImageView>(R.id.imgBitmap1).setImageBitmap(image as Bitmap?)
                 }
             }
         }

@@ -43,10 +43,16 @@ android {
         // Thư mục chứa các file .so nếu có copy sẵn
         getByName("main") {
             jniLibs.srcDirs("src/main/jniLibs")
+
         }
     }
 
     buildTypes {
+        debug {
+            ndk {
+                debugSymbolLevel = "FULL"
+            }
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(

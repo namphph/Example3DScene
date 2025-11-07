@@ -1,5 +1,6 @@
 package com.amazon.examplethreescene.utils
 
+import android.graphics.Bitmap
 
 class AssimpHelper {
     companion object {
@@ -29,4 +30,8 @@ class AssimpHelper {
         height: Int,
         outputFbxPath: String
     ): Boolean
+
+    external fun exportFbxWithTexture(glbPath: String, bitmapPath: String, outputFbxPath: String): Boolean
+
+    external fun generateUVMap(glbPath: String, width: Int, height: Int): Bitmap?
 }
